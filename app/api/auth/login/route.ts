@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { AccountError, authenticatePasswordAccount } from "@/lib/accounts";
 import { env } from "@/lib/env";
-import { createSession, setSessionCookie } from "@/lib/sessions";
+import { createSession, sessionMetadata, setSessionCookie } from "@/lib/sessions";
 import { enforceAuthRateLimit, RateLimitError } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   username: z.string().trim().min(1).max(24),
   password: z.string().min(1).max(128),
+  deviceName: z.string().trim().max(120).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     await enforceAuthRateLimit(request, input.username);
     const account = await authenticatePasswordAccount(input.username, input.password);
-    const session = await createSession(account.id);
+    const session = await createSession(account.id, sessionMetadata(request, input.deviceName));
     const isNative = request.headers.get("x-aeropulse-client") === "ios";
     const response = NextResponse.json({
       account,

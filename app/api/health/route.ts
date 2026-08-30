@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 export async function GET() {
   try {
     const rows = await sql`SELECT version FROM schema_metadata WHERE singleton = TRUE LIMIT 1`;
-    if (Number((rows[0] as { version?: number } | undefined)?.version) !== 2) throw new Error("Schema mismatch");
+    if (Number((rows[0] as { version?: number } | undefined)?.version) !== 3) throw new Error("Schema mismatch");
     void env.credentialEncryptionKey;
     return NextResponse.json({ status: "ok", service: "AeroPulse Cloud", version: 1 });
   } catch {

@@ -7,7 +7,7 @@ Vercel-ready account and synchronization service for AeroPulse.
 - Hashed 30-day browser and native bearer sessions.
 - Version-protected flight and preference snapshots.
 - AES-256-GCM encrypted AirLabs, Aviationstack, AeroDataBox, and Lufthansa credentials.
-- Web account, API-key management, sign-out, and account deletion.
+- Web account, API-key management, device-session revocation, sign-out, and account deletion.
 
 Guest mode remains local to the native app. A guest's local data becomes the first cloud snapshot when they create a new account.
 
@@ -30,9 +30,10 @@ No Apple Developer credentials or OAuth secrets are required.
 1. Create a Neon Postgres database.
 2. Run `db/schema.sql` in the Neon SQL editor.
 3. If the old Apple-auth schema was already installed, run `db/migrate-from-apple.sql` once instead. It deletes prelaunch Apple-only accounts because they cannot be converted to passwords.
-4. Configure the three environment variables above.
-5. Run `npm install` and `npm run dev`, or import this repository into Vercel.
-6. Set `AeroPulseCloudBaseURL` in the native app's `Info.plist` to the deployed origin.
+4. If the password-auth schema is already deployed at version 2, run `db/migrate-add-devices.sql` once.
+5. Configure the three environment variables above.
+6. Run `npm install` and `npm run dev`, or import this repository into Vercel.
+7. Set `AeroPulseCloudBaseURL` in the native app's `Info.plist` to the deployed origin.
 
 ## Native API
 
@@ -47,6 +48,8 @@ Both return `{ account, sessionToken, expiresAt }`. Native requests then use `Au
 `GET /api/sync` returns `{ version, payload, updatedAt }`. `PUT /api/sync` accepts `{ baseVersion, payload }` and returns HTTP 409 if another device wrote first.
 
 `DELETE /api/account` permanently removes the user. Foreign-key cascades remove sessions, provider credentials, and snapshots.
+
+`GET /api/sessions` lists active browser and native devices. `DELETE /api/sessions` revokes a selected session immediately.
 
 ## Production notes
 

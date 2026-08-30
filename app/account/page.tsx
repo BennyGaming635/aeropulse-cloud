@@ -1,6 +1,7 @@
 import { accountForPage } from "@/lib/sessions";
 import APIKeysPanel from "./APIKeysPanel";
 import AuthPanel from "./AuthPanel";
+import DevicesPanel from "./DevicesPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -9,52 +10,70 @@ export default async function AccountPage() {
 
   if (!account) {
     return (
-      <main className="account-shell">
-        <section className="sign-in-card">
-          <p className="eyebrow">AEROPULSE ACCOUNT</p>
-          <h1>Bring every trip into view.</h1>
-          <p>Sign in with your AeroPulse username, or create an account to receive an AeroPulse ID.</p>
-          <AuthPanel />
-          <div className="guest-note">
-            <strong>Prefer not to sign in?</strong>
-            <span>Continue as a guest from the AeroPulse setup wizard. Guest data stays on that device.</span>
-          </div>
-        </section>
+      <main className="account-shell auth-shell">
+        <div className="auth-layout">
+          <aside className="auth-visual">
+            <p className="eyebrow">AEROPULSE ID</p>
+            <h1>Resume your journey.</h1>
+            <p>Trips, preferences, and encrypted provider keys ready wherever AeroPulse is installed.</p>
+            <div className="auth-route">
+              <div><strong>SFO</strong><span>18:42</span></div>
+              <i><span /></i>
+              <div><strong>LHR</strong><span>13:03</span></div>
+            </div>
+            <div className="auth-signal"><i /> Waiting for secure sign-in</div>
+          </aside>
+          <section className="sign-in-card">
+            <p className="eyebrow">ACCOUNT ACCESS</p>
+            <h2>Welcome aboard.</h2>
+            <p>Sign in with your AeroPulse username or create a new ID.</p>
+            <AuthPanel />
+            <div className="guest-note">
+              <strong>Not ready to sync?</strong>
+              <span>Continue as a guest in the AeroPulse app. Your data stays on that device.</span>
+            </div>
+          </section>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="account-shell">
+    <main className="portal-shell">
+      <div className="portal-heading">
+        <div>
+          <p className="eyebrow">ACCOUNT CONTROL</p>
+          <h1>{account.displayName || account.username}</h1>
+          <p>@{account.username} · Synced with AeroPulse Cloud</p>
+        </div>
+        <span className="status-pill"><i /> Cloud ready</span>
+      </div>
+
       <div className="account-stack">
-        <section className="account-card">
-        <div className="account-heading">
-          <div>
-            <p className="eyebrow">SIGNED IN</p>
-            <h1>{account.displayName || "AeroPulse traveller"}</h1>
-            <p>@{account.username}</p>
-          </div>
-          <span className="status-pill"><i /> Cloud ready</span>
+        <div className="portal-grid">
+          <section className="account-card">
+            <div className="card-label"><span>IDENTITY</span><small>Created {new Date(account.createdAt).toLocaleDateString("en", { dateStyle: "medium" })}</small></div>
+            <div className="id-ticket">
+              <span>YOUR AEROPULSE ID</span>
+              <strong>{account.aeroPulseID}</strong>
+              <small>Use the same username on every AeroPulse device.</small>
+            </div>
+            <div className="account-grid">
+              <div><span>Username</span><strong>@{account.username}</strong></div>
+              <div><span>Sync protocol</span><strong>Version protected</strong></div>
+            </div>
+            <div className="account-actions">
+              <form action="/api/auth/logout" method="post"><button className="button secondary">Sign out</button></form>
+              <details className="delete-control">
+                <summary>Delete cloud account</summary>
+                <form action="/api/account/delete" method="post">
+                  <button className="text-danger">Confirm permanent deletion</button>
+                </form>
+              </details>
+            </div>
+          </section>
+          <DevicesPanel />
         </div>
-        <div className="id-ticket">
-          <span>YOUR AEROPULSE ID</span>
-          <strong>{account.aeroPulseID}</strong>
-          <small>Created {new Date(account.createdAt).toLocaleDateString("en", { dateStyle: "medium" })}</small>
-        </div>
-        <div className="account-grid">
-          <div><span>Username</span><strong>@{account.username}</strong></div>
-          <div><span>Sync</span><strong>Version protected</strong></div>
-        </div>
-        <div className="account-actions">
-          <form action="/api/auth/logout" method="post"><button className="button secondary">Sign out</button></form>
-          <details className="delete-control">
-            <summary>Delete account and cloud data</summary>
-            <form action="/api/account/delete" method="post">
-              <button className="text-danger">Confirm permanent deletion</button>
-            </form>
-          </details>
-        </div>
-        </section>
         <APIKeysPanel />
       </div>
     </main>

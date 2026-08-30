@@ -3,13 +3,14 @@ import { z } from "zod";
 import { AccountError, createPasswordAccount, deleteAccount } from "@/lib/accounts";
 import { env } from "@/lib/env";
 import { isValidUsername } from "@/lib/passwords";
-import { createSession, setSessionCookie } from "@/lib/sessions";
+import { createSession, sessionMetadata, setSessionCookie } from "@/lib/sessions";
 import { enforceAuthRateLimit, RateLimitError } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   username: z.string().trim().refine(isValidUsername, "Use 3-24 letters, numbers, or underscores"),
   password: z.string().min(10).max(128),
   displayName: z.string().trim().max(100).optional(),
+  deviceName: z.string().trim().max(120).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     const account = await createPasswordAccount(input);
     let session: Awaited<ReturnType<typeof createSession>>;
     try {
-      session = await createSession(account.id);
+      session = await createSession(account.id, sessionMetadata(request, input.deviceName));
     } catch (error) {
       await deleteAccount(account.id);
       throw error;

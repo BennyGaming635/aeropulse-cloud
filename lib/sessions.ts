@@ -12,12 +12,45 @@ function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export async function createSession(userID: string) {
+type SessionMetadata = { deviceName: string; userAgent: string | null };
+
+export type DeviceSession = {
+  id: string;
+  deviceName: string;
+  userAgent: string | null;
+  createdAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+};
+
+export function sessionMetadata(request: NextRequest, suppliedName?: string): SessionMetadata {
+  const userAgent = request.headers.get("user-agent");
+  const trimmedName = suppliedName?.trim().slice(0, 120);
+  if (trimmedName) return { deviceName: trimmedName, userAgent };
+  if (!userAgent) return { deviceName: "Web browser", userAgent: null };
+  const browser = userAgent.includes("Edg/") ? "Edge"
+    : userAgent.includes("Chrome/") ? "Chrome"
+    : userAgent.includes("Firefox/") ? "Firefox"
+    : userAgent.includes("Safari/") ? "Safari"
+    : "Web browser";
+  const platform = userAgent.includes("iPhone") ? "iPhone"
+    : userAgent.includes("iPad") ? "iPad"
+    : userAgent.includes("Macintosh") ? "Mac"
+    : userAgent.includes("Windows") ? "Windows PC"
+    : userAgent.includes("Android") ? "Android device"
+    : "device";
+  return { deviceName: `${browser} on ${platform}`, userAgent };
+}
+
+export async function createSession(userID: string, metadata: SessionMetadata) {
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + sessionLifetimeSeconds * 1_000);
   await sql`
-    INSERT INTO sessions (token_hash, user_id, expires_at)
-    VALUES (${hashToken(token)}, ${userID}, ${expiresAt.toISOString()})
+    INSERT INTO sessions (token_hash, user_id, device_name, user_agent, expires_at)
+    VALUES (
+      ${hashToken(token)}, ${userID}, ${metadata.deviceName}, ${metadata.userAgent}, ${expiresAt.toISOString()}
+    )
   `;
   return { token, expiresAt };
 }
@@ -50,11 +83,51 @@ export async function deleteSession(token: string | null) {
 async function accountForToken(token: string | null): Promise<Account | null> {
   if (!token) return null;
   const rows = (await sql`
-    SELECT user_id FROM sessions
+    UPDATE sessions SET last_seen_at = NOW()
     WHERE token_hash = ${hashToken(token)} AND expires_at > NOW()
-    LIMIT 1
+    RETURNING user_id
   `) as { user_id: string }[];
   return rows[0] ? accountByID(rows[0].user_id) : null;
+}
+
+export async function sessionsForUser(userID: string, currentToken: string | null): Promise<DeviceSession[]> {
+  const currentHash = currentToken ? hashToken(currentToken) : "";
+  const rows = (await sql`
+    SELECT id, device_name, user_agent, created_at, last_seen_at, expires_at,
+      token_hash = ${currentHash} AS is_current
+    FROM sessions
+    WHERE user_id = ${userID} AND expires_at > NOW()
+    ORDER BY last_seen_at DESC
+  `) as Array<{
+    id: string;
+    device_name: string;
+    user_agent: string | null;
+    created_at: string | Date;
+    last_seen_at: string | Date;
+    expires_at: string | Date;
+    is_current: boolean;
+  }>;
+  return rows.map((row) => ({
+    id: row.id,
+    deviceName: row.device_name,
+    userAgent: row.user_agent,
+    createdAt: (row.created_at instanceof Date ? row.created_at : new Date(row.created_at)).toISOString(),
+    lastSeenAt: (row.last_seen_at instanceof Date ? row.last_seen_at : new Date(row.last_seen_at)).toISOString(),
+    expiresAt: (row.expires_at instanceof Date ? row.expires_at : new Date(row.expires_at)).toISOString(),
+    isCurrent: row.is_current,
+  }));
+}
+
+export async function revokeDeviceSession(userID: string, sessionID: string, currentToken: string | null) {
+  const rows = (await sql`
+    DELETE FROM sessions WHERE id = ${sessionID} AND user_id = ${userID}
+    RETURNING token_hash
+  `) as Array<{ token_hash: string }>;
+  if (!rows[0]) return { found: false, revokedCurrent: false };
+  return {
+    found: true,
+    revokedCurrent: currentToken ? rows[0].token_hash === hashToken(currentToken) : false,
+  };
 }
 
 export async function accountForRequest(request: NextRequest): Promise<Account | null> {

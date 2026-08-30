@@ -12,19 +12,24 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <header className="site-header">
-          <Link className="brand" href="/">
-            <span className="brand-mark">AP</span>
-            <span>AeroPulse Cloud</span>
-          </Link>
-          <nav>
-            <Link href="/docs">API</Link>
-            <Link className="nav-account" href="/account">Account</Link>
-          </nav>
+          <div className="header-inner">
+            <Link className="brand" href="/">
+              <span className="brand-mark"><i /><i /><i /></span>
+              <span><strong>AeroPulse</strong><small>Cloud</small></span>
+            </Link>
+            <nav>
+              <span className="network-status"><i /> Systems online</span>
+              <Link className="nav-account" href="/account">Account <span>↗</span></Link>
+            </nav>
+          </div>
         </header>
         {children}
         <footer>
-          <span>AeroPulse Cloud</span>
-          <span>Your journey, ready on your next device.</span>
+          <div className="footer-inner">
+            <span className="footer-brand">AeroPulse / Cloud</span>
+            <span>Your journey, ready on your next device.</span>
+            <span>Private by design</span>
+          </div>
         </footer>
       </body>
     </html>
