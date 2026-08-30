@@ -15,7 +15,7 @@ export default function Home() {
             <Link className="button primary" href="/account">Open your account</Link>
             <Link className="button secondary" href="/docs">Explore the sync API</Link>
           </div>
-          <p className="fine-print">Sign in with Apple. No password. Guest mode stays available in the app.</p>
+          <p className="fine-print">One username for your trips and flight-data keys. Guest mode remains available.</p>
         </div>
         <div className="orbit-card" aria-label="Illustration of cloud flight sync">
           <div className="orbit orbit-one" />
@@ -32,7 +32,7 @@ export default function Home() {
       </section>
 
       <section className="signal-strip" aria-label="Cloud features">
-        <article><span>01</span><h2>One identity</h2><p>A stable AeroPulse ID follows your Apple account.</p></article>
+        <article><span>01</span><h2>One identity</h2><p>A stable AeroPulse ID follows your username across devices.</p></article>
         <article><span>02</span><h2>Version-safe sync</h2><p>Changes are checked before another device can replace them.</p></article>
         <article><span>03</span><h2>You stay in control</h2><p>Sign out, use guest mode, or remove cloud data at any time.</p></article>
       </section>
@@ -40,7 +40,7 @@ export default function Home() {
       <section className="privacy-panel">
         <p className="eyebrow">BUILT FOR PERSONAL TRAVEL DATA</p>
         <h2>Cloud convenience without turning your itinerary into a profile for advertisers.</h2>
-        <p>AeroPulse ID is used for account access and sync. Provider API keys remain on your device.</p>
+        <p>AeroPulse ID is used for account access and sync. Provider API keys are separately encrypted before database storage.</p>
       </section>
     </main>
   );

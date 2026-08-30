@@ -3,35 +3,30 @@ export default function DocsPage() {
     <main className="docs-shell">
       <p className="eyebrow">AEROPULSE CLOUD API / V1</p>
       <h1>Native sync contract</h1>
-      <p className="docs-lede">The iOS app authenticates with an Apple identity token and then uses the returned AeroPulse session as a bearer token.</p>
+      <p className="docs-lede">The iOS app signs up or logs in with a username and password, then uses the returned session as a bearer token.</p>
 
-      <section className="endpoint"><code>POST /api/auth/apple/challenge</code><p>Create a short-lived, single-use nonce challenge for native Sign in with Apple.</p></section>
-      <section className="endpoint"><code>POST /api/auth/apple/native</code><p>Exchange an Apple identity token, authorization code, and challenge for an account session.</p></section>
-      <section className="endpoint"><code>GET /api/account</code><p>Restore the current AeroPulse ID and account details.</p></section>
-      <section className="endpoint"><code>GET /api/sync</code><p>Fetch the current snapshot and its optimistic version.</p></section>
-      <section className="endpoint"><code>PUT /api/sync</code><p>Write a snapshot using <code>baseVersion</code>. A stale write returns HTTP 409 and the current snapshot.</p></section>
-      <section className="endpoint"><code>DELETE /api/account</code><p>Permanently remove the account, sessions, and synced data.</p></section>
+      <section className="endpoint"><code>POST /api/auth/signup</code><p>Create an AeroPulse ID and return a 30-day session.</p></section>
+      <section className="endpoint"><code>POST /api/auth/login</code><p>Authenticate an existing username and return a session.</p></section>
+      <section className="endpoint"><code>GET /api/account</code><p>Restore the current account and AeroPulse ID.</p></section>
+      <section className="endpoint"><code>GET / PUT / DELETE /api/provider-credentials</code><p>Read, save, or remove encrypted flight-provider credentials.</p></section>
+      <section className="endpoint"><code>GET / PUT /api/sync</code><p>Read or write the version-protected flight and preference snapshot.</p></section>
+      <section className="endpoint"><code>DELETE /api/account</code><p>Permanently remove the account, sessions, keys, and synced data.</p></section>
 
       <div className="code-card">
-        <span>Native authorization request</span>
+        <span>Account request</span>
         <pre>{`{
-  "identityToken": "eyJ...",
-  "authorizationCode": "c123...",
-  "challengeID": "8d97bdf0-7b15-4c5b-8322-90e4fa0693e8",
-  "rawNonce": "one-time-random-value",
+  "username": "cloud_traveller",
+  "password": "a-long-private-password",
   "displayName": "Taylor"
 }`}</pre>
       </div>
       <div className="code-card">
-        <span>Versioned snapshot write</span>
+        <span>Provider credential write</span>
         <pre>{`{
-  "baseVersion": 4,
-  "payload": {
-    "schemaVersion": 1,
-    "flights": [],
-    "preferences": {},
-    "clientUpdatedAt": "2026-08-30T05:00:00Z"
-  }
+  "providerID": "aeroDataBox",
+  "primary": "rapid-api-key",
+  "secondary": "",
+  "baseVersion": 0
 }`}</pre>
       </div>
     </main>

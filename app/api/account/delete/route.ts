@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { deleteAccountAndRevokeApple } from "@/lib/accounts";
+import { deleteAccount } from "@/lib/accounts";
 import { env } from "@/lib/env";
 import { accountForRequest, clearSessionCookie, isTrustedMutation } from "@/lib/sessions";
 
@@ -8,10 +8,10 @@ export async function POST(request: NextRequest) {
   const account = await accountForRequest(request);
   if (account) {
     try {
-      await deleteAccountAndRevokeApple(account.id);
+      await deleteAccount(account.id);
     } catch (error) {
-      console.error("Account deletion could not revoke Apple access", error);
-      return NextResponse.redirect(`${env.appBaseURL}/account?error=apple_revocation_failed`, 303);
+      console.error("Account deletion failed", error);
+      return NextResponse.redirect(`${env.appBaseURL}/account?error=account_deletion_failed`, 303);
     }
   }
   const response = NextResponse.redirect(`${env.appBaseURL}/account`, 303);

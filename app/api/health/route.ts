@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { env } from "@/lib/env";
 
 export async function GET() {
   try {
-    await sql`SELECT 1 FROM users LIMIT 1`;
+    const rows = await sql`SELECT version FROM schema_metadata WHERE singleton = TRUE LIMIT 1`;
+    if (Number((rows[0] as { version?: number } | undefined)?.version) !== 2) throw new Error("Schema mismatch");
+    void env.credentialEncryptionKey;
     return NextResponse.json({ status: "ok", service: "AeroPulse Cloud", version: 1 });
   } catch {
     return NextResponse.json(

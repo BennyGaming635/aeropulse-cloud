@@ -4,7 +4,7 @@ import { sql } from "@/lib/db";
 import { accountForRequest } from "@/lib/sessions";
 
 const payloadSchema = z.object({
-  schemaVersion: z.number().int().positive(),
+  schemaVersion: z.literal(1),
   flights: z.array(z.unknown()),
   preferences: z.record(z.string(), z.unknown()),
   clientUpdatedAt: z.string().datetime().optional(),

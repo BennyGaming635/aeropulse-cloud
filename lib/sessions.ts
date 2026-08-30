@@ -25,7 +25,7 @@ export async function createSession(userID: string) {
 export function setSessionCookie(response: NextResponse, token: string, expiresAt: Date) {
   response.cookies.set(sessionCookieName, token, {
     httpOnly: true,
-    secure: true,
+    secure: env.appBaseURL.startsWith("https://"),
     sameSite: "lax",
     path: "/",
     expires: expiresAt,
@@ -35,7 +35,7 @@ export function setSessionCookie(response: NextResponse, token: string, expiresA
 export function clearSessionCookie(response: NextResponse) {
   response.cookies.set(sessionCookieName, "", {
     httpOnly: true,
-    secure: true,
+    secure: env.appBaseURL.startsWith("https://"),
     sameSite: "lax",
     path: "/",
     expires: new Date(0),

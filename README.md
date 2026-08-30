@@ -1,73 +1,58 @@
 # AeroPulse Cloud
 
-Vercel-ready account and synchronization service for AeroPulse. It provides:
+Vercel-ready account and synchronization service for AeroPulse.
 
-- Sign in with Apple on the web and native iOS token exchange.
+- Username/password signup and login with `scrypt` password hashing.
 - Stable, non-secret AeroPulse IDs such as `AP-7K9M-2WQF`.
-- Hashed 30-day sessions for browsers and native bearer tokens.
-- Versioned JSON snapshots with HTTP 409 conflict responses.
-- Account and cloud-data deletion.
-- A responsive account portal and API documentation.
+- Hashed 30-day browser and native bearer sessions.
+- Version-protected flight and preference snapshots.
+- AES-256-GCM encrypted AirLabs, Aviationstack, AeroDataBox, and Lufthansa credentials.
+- Web account, API-key management, sign-out, and account deletion.
 
-Guest mode is intentionally local to the AeroPulse app. A guest's local flights become the first cloud snapshot when they create an AeroPulse account and that account has no existing snapshot.
+Guest mode remains local to the native app. A guest's local data becomes the first cloud snapshot when they create a new account.
 
-## Local setup
+## Environment variables
 
-Node.js 22 or later is recommended.
+Copy `.env.example` to `.env.local` for local development and add the same values in Vercel:
 
-1. Create a Neon Postgres database, then run `db/schema.sql` in the Neon SQL editor.
-2. Copy `.env.example` to `.env.local` and fill in every value.
-   Generate `APPLE_TOKEN_ENCRYPTION_KEY` with `openssl rand -base64 32` and keep it stable between deployments.
-3. Run `npm install`.
-4. Run `npm run dev`.
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon/Postgres connection string. |
+| `APP_BASE_URL` | Canonical HTTPS deployment origin, with no trailing slash. |
+| `CREDENTIAL_ENCRYPTION_KEY` | Base64-encoded 32-byte key used only for provider credentials. |
 
-Apple's web callback requires a registered HTTPS domain, so complete Sign in with Apple testing should use a Vercel preview or production domain rather than localhost.
-Apple sign-in always redirects to `APP_BASE_URL`; use a stable Apple-registered staging domain instead of arbitrary Vercel preview URLs.
+Generate the encryption key once with `openssl rand -base64 32`. Keep it stable and secret. Losing or rotating it without a migration makes existing synced API keys unreadable.
 
-## Apple Developer setup
+No Apple Developer credentials or OAuth secrets are required.
 
-1. Enable Sign in with Apple for the app identifier `com.bengraetz.AeroPulse`.
-2. Create a Services ID, for example `com.bengraetz.AeroPulse.web`.
-3. Associate the Services ID with the AeroPulse primary App ID.
-4. Register the Vercel domain and `https://YOUR_DOMAIN/api/auth/apple/callback` return URL.
-5. Create and download a Sign in with Apple `.p8` key, then configure its Team ID, Key ID, and private key in Vercel.
-6. Set `APPLE_NATIVE_CLIENT_ID` to the iOS bundle identifier and `APPLE_WEB_CLIENT_ID` to the Services ID.
+## Setup
 
-The iOS app also needs the `com.apple.developer.applesignin` entitlement and a regenerated provisioning profile.
+1. Create a Neon Postgres database.
+2. Run `db/schema.sql` in the Neon SQL editor.
+3. If the old Apple-auth schema was already installed, run `db/migrate-from-apple.sql` once instead. It deletes prelaunch Apple-only accounts because they cannot be converted to passwords.
+4. Configure the three environment variables above.
+5. Run `npm install` and `npm run dev`, or import this repository into Vercel.
+6. Set `AeroPulseCloudBaseURL` in the native app's `Info.plist` to the deployed origin.
 
-## Vercel deployment
+## Native API
 
-1. Import this directory as a new Vercel project.
-2. Add a Neon integration or set `DATABASE_URL` manually.
-3. Add all variables from `.env.example` to Production and Preview.
-4. Deploy, register the final domain with Apple, and update `APP_BASE_URL` and `APPLE_WEB_REDIRECT_URI`.
-5. Set the native app's `AeroPulseCloudBaseURL` Info.plist value to the deployed origin.
+`POST /api/auth/signup` accepts `username`, `password`, and optional `displayName`.
 
-## API
+`POST /api/auth/login` accepts `username` and `password`.
 
-Native requests use `Authorization: Bearer SESSION_TOKEN` after `POST /api/auth/apple/native`.
+Both return `{ account, sessionToken, expiresAt }`. Native requests then use `Authorization: Bearer SESSION_TOKEN`.
 
-### `POST /api/auth/apple/native`
+`GET`, `PUT`, and `DELETE /api/provider-credentials` synchronize provider keys independently from the flight snapshot. Mutations include the provider's `baseVersion`; stale writes return HTTP 409. Deletions retain versioned tombstones so old devices cannot overwrite a newly recreated key. Keys are returned only to an authenticated account over HTTPS and are encrypted before database storage.
 
-The app first requests a short-lived challenge, then sends its Apple identity token, single-use authorization code, challenge ID, raw nonce, and first-login display name. The server validates issuer, audience, signature, expiry, and nonce, consumes the challenge, exchanges the code with Apple, and encrypts the resulting refresh token.
+`GET /api/sync` returns `{ version, payload, updatedAt }`. `PUT /api/sync` accepts `{ baseVersion, payload }` and returns HTTP 409 if another device wrote first.
 
-### `GET /api/sync`
-
-Returns `{ version, payload, updatedAt }`. A new account has version `0` and an empty payload.
-
-### `PUT /api/sync`
-
-Accepts `{ baseVersion, payload }`. The write succeeds only if `baseVersion` is current. A conflict returns HTTP 409 with `{ error, current }`. Snapshots are limited to 2 MB.
-
-### Account deletion
-
-`DELETE /api/account` removes the user. Foreign-key cascades remove sessions and sync data. The web account page exposes the same operation.
+`DELETE /api/account` permanently removes the user. Foreign-key cascades remove sessions, provider credentials, and snapshots.
 
 ## Production notes
 
-- AeroPulse IDs identify accounts but are not authentication secrets.
-- Provider API credentials must remain in the native Keychain and must not be included in snapshots.
-- Configure Vercel rate limiting or a firewall rule for authentication endpoints before a public launch.
-- Run periodic cleanup for expired `sessions` rows.
-- Also remove expired `auth_challenges` rows during scheduled cleanup.
-- Update the privacy policy and App Store privacy disclosures for account identity and user-provided travel data.
+- AeroPulse IDs and usernames identify accounts; neither replaces the password.
+- Authentication has database-backed IP and username limits; add Vercel Firewall limits as an additional public-launch layer.
+- Run periodic cleanup with `DELETE FROM sessions WHERE expires_at <= NOW()`.
+- Periodically remove expired rate-limit windows from `auth_rate_limits`.
+- Never expose `CREDENTIAL_ENCRYPTION_KEY` to browser code or commit `.env.local`.
+- Update App Store and website privacy disclosures for account identifiers, travel data, and user-provided provider credentials.
