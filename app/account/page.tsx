@@ -13,9 +13,9 @@ export default async function AccountPage() {
       <main className="account-shell auth-shell">
         <div className="auth-layout">
           <aside className="auth-visual">
-            <p className="eyebrow">AEROPULSE ID</p>
+            <p className="eyebrow">AERO ID</p>
             <h1>Resume your journey.</h1>
-            <p>Trips, preferences, and encrypted provider keys ready wherever AeroPulse is installed.</p>
+            <p>Trips, preferences, and encrypted provider keys ready wherever Aero is installed.</p>
             <div className="auth-route">
               <div><strong>SFO</strong><span>18:42</span></div>
               <i><span /></i>
@@ -26,11 +26,11 @@ export default async function AccountPage() {
           <section className="sign-in-card">
             <p className="eyebrow">ACCOUNT ACCESS</p>
             <h2>Welcome aboard.</h2>
-            <p>Sign in with your AeroPulse username or create a new ID.</p>
+            <p>Sign in with your Aero username or create a new Aero ID.</p>
             <AuthPanel />
             <div className="guest-note">
               <strong>Not ready to sync?</strong>
-              <span>Continue as a guest in the AeroPulse app. Your data stays on that device.</span>
+              <span>Continue as a guest in the Aero app. Your data stays on that device.</span>
             </div>
           </section>
         </div>
@@ -44,7 +44,7 @@ export default async function AccountPage() {
         <div>
           <p className="eyebrow">ACCOUNT CONTROL</p>
           <h1>{account.displayName || account.username}</h1>
-          <p>@{account.username} · Synced with AeroPulse Cloud</p>
+          <p>@{account.username} · Synced with Aero</p>
         </div>
         <span className="status-pill"><i /> Cloud ready</span>
       </div>
@@ -54,9 +54,9 @@ export default async function AccountPage() {
           <section className="account-card">
             <div className="card-label"><span>IDENTITY</span><small>Created {new Date(account.createdAt).toLocaleDateString("en", { dateStyle: "medium" })}</small></div>
             <div className="id-ticket">
-              <span>YOUR AEROPULSE ID</span>
+              <span>YOUR AERO ID</span>
               <strong>{account.aeroPulseID}</strong>
-              <small>Use the same username on every AeroPulse device.</small>
+              <small>Use the same username on every Aero device.</small>
             </div>
             <div className="account-grid">
               <div><span>Username</span><strong>@{account.username}</strong></div>

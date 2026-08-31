@@ -109,7 +109,7 @@ export default function APIKeysPanel() {
         return next;
       });
       setVersions((current) => ({ ...current, [providerID]: result.version || current[providerID] }));
-      setMessage("API key removed from AeroPulse Cloud.");
+      setMessage("API key removed from Aero.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not remove API key");
     } finally {
@@ -123,7 +123,7 @@ export default function APIKeysPanel() {
         <div><p className="eyebrow">FLIGHT DATA SOURCES</p><h2>Synced API keys</h2></div>
         <span>Encrypted at rest</span>
       </div>
-      <p className="keys-intro">Manage the same provider credentials used by AeroPulse on your devices.</p>
+      <p className="keys-intro">Manage the same provider credentials used by Aero on your devices.</p>
       <div className="provider-list">
         {providers.map((provider) => (
           <article className="provider-editor" key={provider.id}>

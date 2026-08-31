@@ -3,8 +3,8 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AeroPulse Cloud",
-  description: "Carry your flights, preferences, and journey history across AeroPulse devices.",
+  title: "Aero | Account and sync",
+  description: "Carry your flights, preferences, and journey history across Aero devices with Aero ID.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="header-inner">
             <Link className="brand" href="/">
               <span className="brand-mark"><i /><i /><i /></span>
-              <span><strong>AeroPulse</strong><small>Cloud</small></span>
+              <span><strong>Aero</strong><small>Account &amp; sync</small></span>
             </Link>
             <nav>
               <span className="network-status"><i /> Systems online</span>
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {children}
         <footer>
           <div className="footer-inner">
-            <span className="footer-brand">AeroPulse / Cloud</span>
+            <span className="footer-brand">Aero</span>
             <span>Your journey, ready on your next device.</span>
             <span>Private by design</span>
           </div>

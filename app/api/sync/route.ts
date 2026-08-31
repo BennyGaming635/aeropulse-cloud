@@ -86,6 +86,6 @@ export async function PUT(request: NextRequest) {
     );
   } catch (error) {
     console.error("Sync snapshot write failed", error);
-    return NextResponse.json({ error: "AeroPulse Cloud is temporarily unavailable" }, { status: 503 });
+    return NextResponse.json({ error: "Aero is temporarily unavailable" }, { status: 503 });
   }
 }

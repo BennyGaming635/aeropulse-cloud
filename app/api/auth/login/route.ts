@@ -43,6 +43,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Incorrect username or password" }, { status: 401 });
     }
     console.error("Account login failed", error);
-    return NextResponse.json({ error: "AeroPulse Cloud is temporarily unavailable" }, { status: 503 });
+    return NextResponse.json({ error: "Aero is temporarily unavailable" }, { status: 503 });
   }
 }

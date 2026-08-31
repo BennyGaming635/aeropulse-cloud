@@ -1,9 +1,9 @@
-# AeroPulse Cloud
+# Aero
 
-Vercel-ready account and synchronization service for AeroPulse.
+Vercel-ready Aero ID account and synchronization service for Aero.
 
 - Username/password signup and login with `scrypt` password hashing.
-- Stable, non-secret AeroPulse IDs such as `AP-7K9M-2WQF`.
+- Stable, non-secret Aero IDs such as `AP-7K9M-2WQF`.
 - Hashed 30-day browser and native bearer sessions.
 - Version-protected flight and preference snapshots.
 - AES-256-GCM encrypted AirLabs, Aviationstack, AeroDataBox, and Lufthansa credentials.
@@ -53,7 +53,7 @@ Both return `{ account, sessionToken, expiresAt }`. Native requests then use `Au
 
 ## Production notes
 
-- AeroPulse IDs and usernames identify accounts; neither replaces the password.
+- Aero IDs and usernames identify accounts; neither replaces the password.
 - Authentication has database-backed IP and username limits; add Vercel Firewall limits as an additional public-launch layer.
 - Run periodic cleanup with `DELETE FROM sessions WHERE expires_at <= NOW()`.
 - Periodically remove expired rate-limit windows from `auth_rate_limits`.

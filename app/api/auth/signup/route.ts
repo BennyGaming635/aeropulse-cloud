@@ -52,6 +52,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "That username is already taken" }, { status: 409 });
     }
     console.error("Account creation failed", error);
-    return NextResponse.json({ error: "AeroPulse Cloud is temporarily unavailable" }, { status: 503 });
+    return NextResponse.json({ error: "Aero is temporarily unavailable" }, { status: 503 });
   }
 }

@@ -73,7 +73,7 @@ export default function AuthPanel() {
         {isCreating && <p className="field-hint">At least 10 characters. Usernames use letters, numbers, and underscores.</p>}
         {error && <p className="form-error" role="alert">{error}</p>}
         <button className="auth-submit" disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Working..." : isCreating ? "Create AeroPulse ID" : "Sign in"}
+          {isSubmitting ? "Working..." : isCreating ? "Create Aero ID" : "Sign in"}
         </button>
       </form>
     </>

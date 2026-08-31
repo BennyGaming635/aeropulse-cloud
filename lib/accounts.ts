@@ -72,7 +72,7 @@ export async function createPasswordAccount(input: {
       if (!aeroPulseIDCollision || attempt === 3) throw error;
     }
   }
-  throw new Error("Could not allocate an AeroPulse ID");
+  throw new Error("Could not allocate an Aero ID");
 }
 
 export async function authenticatePasswordAccount(username: string, password: string): Promise<Account> {

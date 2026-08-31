@@ -6,13 +6,13 @@ export default function Home() {
       <section className="hero">
         <div className="hero-grid" aria-hidden="true" />
         <div className="hero-copy">
-          <div className="live-kicker"><span /> AeroPulse network</div>
+          <div className="live-kicker"><span /> Aero is ready</div>
           <h1>Your flight life.<br /><em>Cleared everywhere.</em></h1>
           <p className="hero-lede">
-            One AeroPulse ID carries your trips, preferences, and flight-data connections from one device to the next.
+            One Aero ID carries your trips, preferences, and flight-data connections from one device to the next.
           </p>
           <div className="hero-actions">
-            <Link className="button primary" href="/account">Enter AeroPulse Cloud <span>↗</span></Link>
+            <Link className="button primary" href="/account">Open your Aero ID <span>↗</span></Link>
           </div>
           <div className="trust-line">
             <span><i /> Encrypted credentials</span>
@@ -46,6 +46,19 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="continuity-strip" aria-label="Aero across your devices">
+        <div>
+          <p className="eyebrow">ONE JOURNEY, EVERY SCREEN</p>
+          <h2>Aero moves with you.</h2>
+        </div>
+        <div className="platform-list">
+          <article><span>01</span><strong>iPhone</strong><small>Plan and follow</small></article>
+          <article><span>02</span><strong>Lock Screen</strong><small>Glance and go</small></article>
+          <article><span>03</span><strong>Apple Watch</strong><small>Gate on wrist</small></article>
+          <article><span>04</span><strong>Aero ID</strong><small>Resume securely</small></article>
+        </div>
+      </section>
+
       <section className="manifest">
         <div className="manifest-heading">
           <p className="eyebrow">BUILT AROUND THE JOURNEY</p>
@@ -57,7 +70,7 @@ export default function Home() {
             <span className="feature-number">01</span>
             <div className="identity-demo"><span>AP</span><strong>AP-7K9M-2WQF</strong><i /></div>
             <h3>One travel identity</h3>
-            <p>Your AeroPulse ID links the journey, not an advertising profile.</p>
+            <p>Your Aero ID links the journey, not an advertising profile.</p>
           </article>
           <article className="feature-card feature-sync">
             <span className="feature-number">02</span>
