@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function AuthPanel() {
+export default function AuthPanel({ nextPath }: { nextPath?: string }) {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [username, setUsername] = useState("");
@@ -24,7 +24,8 @@ export default function AuthPanel() {
       });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error || "Account request failed");
-      router.refresh();
+      if (nextPath) router.push(nextPath);
+      else router.refresh();
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Account request failed");
     } finally {

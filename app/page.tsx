@@ -93,7 +93,7 @@ export default function Home() {
           <h2>Your provider keys are cargo.<br />We treat them accordingly.</h2>
         </div>
         <div className="security-copy">
-          <p>Flight-provider credentials are encrypted separately before database storage. Passwords are salted, memory-hard hashes. Live tracks remain on device.</p>
+          <p>Flight-provider credentials are encrypted separately before database storage. Shared trips copy only a flight's number, airline, route, and scheduled times. Seats, confirmation codes, private notes, attachments, and provider keys are never shared.</p>
           <Link href="/account">Manage your account <span>↗</span></Link>
         </div>
       </section>

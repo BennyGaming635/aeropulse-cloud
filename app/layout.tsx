@@ -28,7 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="footer-inner">
             <span className="footer-brand">Aero</span>
             <span>Your journey, ready on your next device.</span>
-            <span>Private by design</span>
+            <span><Link href="/privacy">Privacy</Link> / Private by design</span>
           </div>
         </footer>
       </body>

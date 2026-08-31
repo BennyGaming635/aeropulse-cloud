@@ -2,11 +2,14 @@ import { accountForPage } from "@/lib/sessions";
 import APIKeysPanel from "./APIKeysPanel";
 import AuthPanel from "./AuthPanel";
 import DevicesPanel from "./DevicesPanel";
+import SharedTripsPanel from "./SharedTripsPanel";
 
 export const dynamic = "force-dynamic";
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ next?: string; trip?: string }> }) {
   const account = await accountForPage();
+  const query = await searchParams;
+  const nextPath = query.next?.startsWith("/invite/") ? query.next : undefined;
 
   if (!account) {
     return (
@@ -27,7 +30,7 @@ export default async function AccountPage() {
             <p className="eyebrow">ACCOUNT ACCESS</p>
             <h2>Welcome aboard.</h2>
             <p>Sign in with your Aero username or create a new Aero ID.</p>
-            <AuthPanel />
+            <AuthPanel nextPath={nextPath} />
             <div className="guest-note">
               <strong>Not ready to sync?</strong>
               <span>Continue as a guest in the Aero app. Your data stays on that device.</span>
@@ -74,6 +77,7 @@ export default async function AccountPage() {
           </section>
           <DevicesPanel />
         </div>
+        <SharedTripsPanel initialTripID={query.trip} />
         <APIKeysPanel />
       </div>
     </main>
