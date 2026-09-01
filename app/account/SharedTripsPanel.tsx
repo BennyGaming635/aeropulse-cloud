@@ -74,7 +74,7 @@ export default function SharedTripsPanel({ initialTripID }: { initialTripID?: st
   const selected = trips.find((trip) => trip.id === selectedID);
 
   return (
-    <section className="shared-trips-card" id="shared-trips">
+    <section aria-busy={loading || creating} className="shared-trips-card" id="shared-trips">
       <div className="shared-trips-heading">
         <div>
           <p className="eyebrow">AERO ID SHARING</p>
@@ -85,20 +85,20 @@ export default function SharedTripsPanel({ initialTripID }: { initialTripID?: st
       </div>
 
       <form className="shared-trip-create" onSubmit={createTrip}>
-        <label>Trip name<input required maxLength={120} placeholder="Summer in Lisbon" value={name} onChange={(event) => setName(event.target.value)} /></label>
-        <label>Starts<input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
-        <label>Ends<input min={startDate || undefined} type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
-        <button className="button primary" disabled={creating} type="submit">{creating ? "Creating..." : "Create shared trip"}</button>
+        <label>Trip name<input autoComplete="off" name="tripName" required maxLength={120} placeholder="Summer in Lisbon" value={name} onChange={(event) => setName(event.target.value)} /></label>
+        <label>Starts<input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
+        <label>Ends<input min={startDate || undefined} name="endDate" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
+        <button className="button primary" disabled={creating} type="submit">{creating ? "Creating trip..." : "Create shared trip"}</button>
       </form>
 
       {error && <p className="form-error" role="alert">{error}</p>}
-      {loading ? <p className="shared-empty">Loading shared trips...</p> : trips.length === 0 ? (
+      {loading ? <p className="shared-empty" role="status">Loading shared trips...</p> : trips.length === 0 ? (
         <p className="shared-empty">No shared trips yet. Create one above, then invite another Aero ID.</p>
       ) : (
         <>
-          <div className="trip-switcher" role="tablist" aria-label="Shared trips">
+          <div aria-label="Choose a shared trip" className="trip-switcher" role="group">
             {trips.map((trip) => (
-              <button className={trip.id === selectedID ? "active" : ""} key={trip.id} onClick={() => setSelectedID(trip.id)} role="tab" type="button">
+              <button aria-pressed={trip.id === selectedID} className={trip.id === selectedID ? "active" : ""} key={trip.id} onClick={() => setSelectedID(trip.id)} type="button">
                 <strong>{trip.name}</strong><span>{trip.members.length} member{trip.members.length === 1 ? "" : "s"}</span>
               </button>
             ))}
@@ -160,6 +160,13 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
     });
   }
 
+  function copyInvite() {
+    void run(async () => {
+      await navigator.clipboard.writeText(inviteURL);
+      setMessage("Invite copied.");
+    });
+  }
+
   function addFlight(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void run(async () => {
@@ -201,7 +208,7 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
   }
 
   return (
-    <div className="trip-workspace">
+    <div aria-busy={busy} className="trip-workspace">
       <div className="trip-summary">
         <div><span>ROLE</span><strong>{trip.role}</strong></div>
         <div><span>DATES</span><strong>{trip.startDate || "Open"} / {trip.endDate || "Open"}</strong></div>
@@ -210,9 +217,9 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
 
       {trip.canManage && (
         <form className="trip-edit-form" onSubmit={saveTrip}>
-          <label>Name<input required maxLength={120} value={name} onChange={(event) => setName(event.target.value)} /></label>
-          <label>Starts<input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
-          <label>Ends<input min={startDate || undefined} type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
+          <label>Name<input autoComplete="off" name="tripName" required maxLength={120} value={name} onChange={(event) => setName(event.target.value)} /></label>
+          <label>Starts<input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
+          <label>Ends<input min={startDate || undefined} name="endDate" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
           <button disabled={busy} type="submit">Save details</button>
         </form>
       )}
@@ -223,13 +230,13 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
           {inviteURL && (
             <div className="invite-output">
               <input aria-label="Invite link" readOnly value={inviteURL} />
-              <button onClick={() => void navigator.clipboard.writeText(inviteURL).then(() => setMessage("Invite copied."))} type="button">Copy</button>
+              <button onClick={copyInvite} type="button">Copy</button>
             </div>
           )}
           <div className="member-list">
             {trip.members.map((member) => (
               <div className="member-row" key={member.id}>
-                <span className="member-avatar">{(member.displayName || member.username).slice(0, 2).toUpperCase()}</span>
+                <span aria-hidden="true" className="member-avatar">{(member.displayName || member.username).slice(0, 2).toUpperCase()}</span>
                 <div><strong>{member.displayName || member.username}{member.isCurrent ? " (you)" : ""}</strong><small>@{member.username} / {member.aeroID}</small></div>
                 <span className="member-role">{member.role}</span>
                 {member.role === "member" && (member.isCurrent || trip.canManage) && (
@@ -243,12 +250,12 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
         <section className="trip-flights">
           <div className="shared-subheading"><h3>Flights</h3><span>{trip.flights.length} SHARED</span></div>
           <form className="flight-share-form" onSubmit={addFlight}>
-            <input aria-label="Flight number" maxLength={16} placeholder="Flight, e.g. UA901" required value={flightNumber} onChange={(event) => setFlightNumber(event.target.value)} />
-            <input aria-label="Airline" maxLength={100} placeholder="Airline (optional)" value={airlineName} onChange={(event) => setAirlineName(event.target.value)} />
-            <input aria-label="Origin airport" maxLength={3} pattern="[A-Za-z]{3}" placeholder="SFO" required value={originCode} onChange={(event) => setOriginCode(event.target.value.toUpperCase())} />
-            <input aria-label="Destination airport" maxLength={3} pattern="[A-Za-z]{3}" placeholder="LHR" required value={destinationCode} onChange={(event) => setDestinationCode(event.target.value.toUpperCase())} />
-            <label>Departure<input required type="datetime-local" value={departure} onChange={(event) => setDeparture(event.target.value)} /></label>
-            <label>Arrival <span>optional</span><input min={departure || undefined} type="datetime-local" value={arrival} onChange={(event) => setArrival(event.target.value)} /></label>
+            <input aria-label="Flight number" autoCapitalize="characters" autoComplete="off" maxLength={16} name="flightNumber" placeholder="Flight, e.g. UA901" required value={flightNumber} onChange={(event) => setFlightNumber(event.target.value.toUpperCase())} />
+            <input aria-label="Airline" autoComplete="off" maxLength={100} name="airlineName" placeholder="Airline (optional)" value={airlineName} onChange={(event) => setAirlineName(event.target.value)} />
+            <input aria-label="Origin airport" autoCapitalize="characters" autoComplete="off" maxLength={3} name="originCode" pattern="[A-Za-z]{3}" placeholder="SFO" required value={originCode} onChange={(event) => setOriginCode(event.target.value.toUpperCase())} />
+            <input aria-label="Destination airport" autoCapitalize="characters" autoComplete="off" maxLength={3} name="destinationCode" pattern="[A-Za-z]{3}" placeholder="LHR" required value={destinationCode} onChange={(event) => setDestinationCode(event.target.value.toUpperCase())} />
+            <label>Departure<input name="departure" required type="datetime-local" value={departure} onChange={(event) => setDeparture(event.target.value)} /></label>
+            <label>Arrival <span>optional</span><input min={departure || undefined} name="arrival" type="datetime-local" value={arrival} onChange={(event) => setArrival(event.target.value)} /></label>
             <button disabled={busy} type="submit">Share flight</button>
           </form>
           <p className="redaction-note">Only flight number, airline, route, and scheduled times are shared. Never seats, confirmation codes, provider keys, notes, or attachments.</p>

@@ -35,6 +35,7 @@ export default function DevicesPanel() {
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
+    setError(null);
     try {
       const response = await fetch("/api/sessions", { cache: "no-store" });
       const result = await response.json() as { sessions?: DeviceSession[]; error?: string };
@@ -70,7 +71,7 @@ export default function DevicesPanel() {
   }
 
   return (
-    <section className="devices-card">
+    <section aria-busy={isLoading} className="devices-card">
       <div className="section-heading">
         <div>
           <p className="eyebrow">ACCESS CONTROL</p>
@@ -80,7 +81,8 @@ export default function DevicesPanel() {
       </div>
       <p className="section-intro">Revoke any device you no longer recognize or use.</p>
       <div className="device-list">
-        {isLoading && <div className="device-skeleton">Checking active sessions...</div>}
+        {isLoading && <div className="device-skeleton" role="status">Checking active sessions...</div>}
+        {!isLoading && !error && sessions.length === 0 && <div className="device-skeleton">No active devices found.</div>}
         {!isLoading && sessions.map((session) => (
           <article className="device-row" key={session.id}>
             <span className={`device-icon ${deviceKind(session.deviceName)}`} aria-hidden="true"><i /></span>
@@ -89,10 +91,10 @@ export default function DevicesPanel() {
               <span>{lastSeen(session.lastSeenAt)} · Added {new Date(session.createdAt).toLocaleDateString("en", { dateStyle: "medium" })}</span>
             </div>
             {session.isCurrent ? (
-              <span className="current-device">This device</span>
+              <span className="current-device" aria-label="Current device">This device</span>
             ) : (
-              <button className="revoke-button" disabled={revoking === session.id} onClick={() => revoke(session.id)}>
-                {revoking === session.id ? "Revoking" : "Revoke"}
+              <button aria-label={`Revoke ${session.deviceName}`} className="revoke-button" disabled={revoking === session.id} onClick={() => revoke(session.id)} type="button">
+                {revoking === session.id ? "Revoking..." : "Revoke"}
               </button>
             )}
           </article>

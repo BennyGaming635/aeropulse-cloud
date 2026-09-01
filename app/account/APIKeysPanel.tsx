@@ -118,26 +118,27 @@ export default function APIKeysPanel() {
   }
 
   return (
-    <section className="keys-card">
+    <section aria-busy={isLoading} className="keys-card">
       <div className="keys-heading">
         <div><p className="eyebrow">FLIGHT DATA SOURCES</p><h2>Synced API keys</h2></div>
         <span>Encrypted at rest</span>
       </div>
       <p className="keys-intro">Manage the same provider credentials used by Aero on your devices.</p>
+      {isLoading && <p className="panel-loading" role="status">Loading encrypted credentials...</p>}
       <div className="provider-list">
         {providers.map((provider) => (
-          <article className="provider-editor" key={provider.id}>
+            <article className="provider-editor" key={provider.id}>
             <div className="provider-title">
               <strong>{provider.name}</strong>
-              <span className={saved.has(provider.id) ? "connected" : ""}>{saved.has(provider.id) ? "Connected" : "Not connected"}</span>
+              <span aria-live="polite" className={saved.has(provider.id) ? "connected" : ""}>{saved.has(provider.id) ? "Connected" : "Not connected"}</span>
             </div>
-            <label>{provider.primary}<input autoComplete="off" disabled={isLoading} type="password" value={drafts[provider.id].primary} onChange={(event) => update(provider.id, "primary", event.target.value)} /></label>
+            <label>{provider.primary}<input autoCapitalize="none" autoComplete="off" disabled={isLoading} name={`${provider.id}-primary`} spellCheck={false} type="password" value={drafts[provider.id].primary} onChange={(event) => update(provider.id, "primary", event.target.value)} /></label>
             {"secondary" in provider && (
-              <label>{provider.secondary}<input autoComplete="off" disabled={isLoading} type="password" value={drafts[provider.id].secondary} onChange={(event) => update(provider.id, "secondary", event.target.value)} /></label>
+              <label>{provider.secondary}<input autoCapitalize="none" autoComplete="off" disabled={isLoading} name={`${provider.id}-secondary`} spellCheck={false} type="password" value={drafts[provider.id].secondary} onChange={(event) => update(provider.id, "secondary", event.target.value)} /></label>
             )}
             <div className="provider-actions">
-              <button disabled={isLoading || busy === provider.id || !drafts[provider.id].primary.trim()} onClick={() => save(provider.id)}>Save</button>
-              {saved.has(provider.id) && <button className="remove-key" disabled={busy === provider.id} onClick={() => remove(provider.id)}>Remove</button>}
+              <button disabled={isLoading || busy === provider.id || !drafts[provider.id].primary.trim()} onClick={() => save(provider.id)} type="button">{busy === provider.id ? "Working..." : "Save"}</button>
+              {saved.has(provider.id) && <button className="remove-key" disabled={busy === provider.id} onClick={() => remove(provider.id)} type="button">Remove</button>}
             </div>
           </article>
         ))}

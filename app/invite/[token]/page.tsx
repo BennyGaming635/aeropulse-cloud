@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { accountForPage } from "@/lib/sessions";
 import { sharedTripInvitePreview } from "@/lib/shared-trips";
@@ -5,13 +6,18 @@ import InviteJoinButton from "./InviteJoinButton";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Shared trip invitation",
+  robots: { index: false, follow: false },
+};
+
 export default async function SharedTripInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const [invite, account] = await Promise.all([sharedTripInvitePreview(token), accountForPage()]);
 
   if (!invite) {
     return (
-      <main className="invite-shell">
+      <main className="invite-shell" id="main-content">
         <section className="invite-card invalid-invite">
           <p className="eyebrow">AERO ID INVITE</p>
           <h1>This link is no longer boarding.</h1>
@@ -25,10 +31,10 @@ export default async function SharedTripInvitePage({ params }: { params: Promise
   const ownerName = invite.owner.displayName || `@${invite.owner.username}`;
   const invitePath = `/invite/${token}`;
   return (
-    <main className="invite-shell">
+    <main className="invite-shell" id="main-content">
       <section className="invite-card">
         <p className="eyebrow">AERO ID SHARED TRIP</p>
-        <span className="invite-route-mark"><i /> INVITATION ACTIVE</span>
+        <span className="invite-route-mark"><i aria-hidden="true" /> INVITATION ACTIVE</span>
         <h1>{invite.tripName}</h1>
         <p><strong>{ownerName}</strong> invited you to coordinate this trip in Aero.</p>
         <div className="invite-owner">

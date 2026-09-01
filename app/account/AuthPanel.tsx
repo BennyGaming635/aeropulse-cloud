@@ -35,15 +35,15 @@ export default function AuthPanel({ nextPath }: { nextPath?: string }) {
 
   return (
     <>
-      <div className="auth-tabs" role="tablist" aria-label="Account action">
-        <button className={!isCreating ? "active" : ""} type="button" onClick={() => setIsCreating(false)}>Sign in</button>
-        <button className={isCreating ? "active" : ""} type="button" onClick={() => setIsCreating(true)}>Create account</button>
+      <div aria-label="Account action" className="auth-tabs" role="group">
+        <button aria-pressed={!isCreating} className={!isCreating ? "active" : ""} type="button" onClick={() => { setIsCreating(false); setError(null); }}>Sign in</button>
+        <button aria-pressed={isCreating} className={isCreating ? "active" : ""} type="button" onClick={() => { setIsCreating(true); setError(null); }}>Create account</button>
       </div>
-      <form className="auth-form" onSubmit={submit}>
+      <form aria-busy={isSubmitting} className="auth-form" onSubmit={submit}>
         {isCreating && (
           <label>
             Display name <span>optional</span>
-            <input autoComplete="name" maxLength={100} value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
+            <input autoComplete="name" maxLength={100} name="displayName" value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
           </label>
         )}
         <label>
@@ -53,6 +53,7 @@ export default function AuthPanel({ nextPath }: { nextPath?: string }) {
             autoComplete="username"
             maxLength={24}
             minLength={3}
+            name="username"
             pattern="[A-Za-z0-9_]+"
             required
             value={username}
@@ -62,19 +63,21 @@ export default function AuthPanel({ nextPath }: { nextPath?: string }) {
         <label>
           Password
           <input
+            aria-describedby={isCreating ? "account-requirements" : undefined}
             autoComplete={isCreating ? "new-password" : "current-password"}
             minLength={isCreating ? 10 : 1}
             maxLength={128}
+            name="password"
             required
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
         </label>
-        {isCreating && <p className="field-hint">At least 10 characters. Usernames use letters, numbers, and underscores.</p>}
+        {isCreating && <p className="field-hint" id="account-requirements">At least 10 characters. Usernames use letters, numbers, and underscores.</p>}
         {error && <p className="form-error" role="alert">{error}</p>}
         <button className="auth-submit" disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Working..." : isCreating ? "Create Aero ID" : "Sign in"}
+          {isSubmitting ? "Please wait..." : isCreating ? "Create Aero ID" : "Sign in"}
         </button>
       </form>
     </>

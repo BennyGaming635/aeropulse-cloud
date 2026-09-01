@@ -156,3 +156,275 @@ footer { background: var(--ink); color: #71898c; border-top: 1px solid var(--lin
   .shared-trips-heading { flex-direction: column; }.shared-trip-create, .trip-edit-form { grid-template-columns: 1fr; }.shared-trip-create .button, .trip-edit-form button { grid-column: auto; }.trip-summary { grid-template-columns: 1fr; }.trip-summary div { border-right: 0; border-bottom: 1px solid var(--line); }.trip-summary div:last-child { border-bottom: 0; }.flight-share-form { grid-template-columns: 1fr 1fr; }.flight-share-form > label { grid-column: 1 / -1; }.shared-flight-list article { grid-template-columns: 1fr auto; }.shared-flight-list article > div:nth-child(2), .shared-flight-list time { grid-column: 1 / -1; }.member-row { grid-template-columns: 30px minmax(0, 1fr) auto; }.member-row .remove-link { grid-column: 2 / -1; justify-self: start; }.invite-shell { min-height: calc(100vh - 70px); padding: 45px 14px 75px; }.invite-card { padding: 31px 24px; }.privacy-shell { padding: 60px 20px 80px; }.privacy-grid { grid-template-columns: 1fr; }
   .footer-inner { grid-template-columns: 1fr; padding: 28px 20px; }.footer-inner span:last-child { text-align: left; }
 }
+
+/* Production refinement: clearer hierarchy, calmer surfaces, and larger controls. */
+body {
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--mint); color: var(--ink); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 12px;
+  left: 12px;
+  padding: 10px 14px;
+  border-radius: 5px;
+  background: var(--mint);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  transform: translateY(-160%);
+  transition: transform .16s ease;
+}
+
+.skip-link:focus { transform: translateY(0); }
+
+a, button, input, summary { -webkit-tap-highlight-color: transparent; }
+button, summary { touch-action: manipulation; }
+button:disabled, input:disabled { cursor: not-allowed; }
+
+:where(a, button, input, summary):focus-visible {
+  outline: 3px solid #3b947d;
+  outline-offset: 3px;
+}
+
+.landing :where(a, button):focus-visible,
+.site-header :where(a, button):focus-visible,
+.invite-shell :where(a, button):focus-visible,
+.auth-visual :where(a, button):focus-visible {
+  outline-color: var(--mint);
+}
+
+.site-header { position: sticky; top: 0; }
+.header-inner { height: 74px; }
+.brand strong { font-size: 16px; }
+.brand small, .network-status { font-size: 9px; }
+.nav-account { min-height: 42px; padding-inline: 17px; font-size: 13px; }
+
+.hero {
+  min-height: min(760px, calc(100svh - 74px));
+  padding-top: clamp(76px, 9vw, 116px);
+  padding-bottom: clamp(84px, 10vw, 124px);
+  gap: clamp(50px, 7vw, 90px);
+}
+
+.hero-grid { opacity: .13; background-size: 88px 88px; }
+.hero::before { opacity: .7; }
+.live-kicker { margin: 0; font-size: 10px; }
+.hero h1 { max-width: 760px; font-size: clamp(56px, 6.4vw, 90px); text-wrap: balance; }
+.hero-lede { max-width: 610px; color: #b5c6c7; font-size: clamp(16px, 1.5vw, 18px); }
+.button { min-height: 44px; padding: 13px 19px; font-size: 13px; transition: color .16s ease, background-color .16s ease, border-color .16s ease, transform .16s ease; }
+.trust-line { margin-top: 32px; color: #9aadaf; font-size: 10px; }
+.flight-console { margin: 0; border-radius: 8px; box-shadow: 0 28px 70px rgba(0,0,0,.25); }
+.flight-console::before { opacity: .1; }
+.console-header, .feed-title { font-size: 10px; }
+.route-board span { font-size: 12px; }
+.journey-facts span { font-size: 9px; }
+.journey-facts strong { font-size: 13px; }
+.feed-row { min-height: 42px; font-size: 12px; }
+.feed-row small { font-size: 10px; }
+
+.continuity-strip { padding-top: 52px; padding-bottom: 52px; }
+.platform-list article { gap: 7px; padding-inline: 22px; }
+.platform-list span { font-size: 9px; }
+.platform-list strong { font-size: 13px; }
+.platform-list small { font-size: 11px; }
+.eyebrow { font-size: 10px; }
+.manifest { padding-top: clamp(90px, 10vw, 124px); padding-bottom: clamp(90px, 10vw, 124px); }
+.manifest-heading { margin-bottom: 48px; }
+.manifest-heading > p:last-child { color: #53686d; font-size: 16px; }
+.feature-grid { gap: 16px; }
+.feature-card { min-height: 370px; border-radius: 6px; box-shadow: none; }
+.feature-card:hover { transform: translateY(-2px); box-shadow: 0 16px 38px rgba(8,25,31,.07); }
+.feature-card h3 { font-size: 21px; }
+.feature-card > p:last-child { color: #53686d; font-size: 14px; }
+.feature-number { font-size: 10px; }
+.security-band { padding-top: clamp(84px, 9vw, 110px); padding-bottom: clamp(84px, 9vw, 110px); }
+.security-copy { color: #b7c6c7; font-size: 15px; }
+.security-copy a { min-height: 42px; align-items: center; font-size: 14px; }
+
+.auth-shell { padding-top: clamp(42px, 7vw, 70px); }
+.auth-layout { border-radius: 8px; box-shadow: 0 28px 70px rgba(0,0,0,.24); }
+.auth-visual::after { opacity: .07; }
+.auth-visual > p:not(.eyebrow) { color: #b4c4c5; font-size: 15px; }
+.auth-route span { font-size: 11px; }
+.auth-signal { color: #9aadaf; font-size: 10px; }
+.sign-in-card > p:not(.eyebrow) { color: #53686d; font-size: 14px; line-height: 1.6; }
+.auth-tabs button { min-height: 42px; font-size: 13px; }
+.auth-form { gap: 16px; }
+.auth-form label, .provider-editor label { gap: 8px; color: #30484d; font-size: 12px; }
+.auth-form input, .provider-editor input { min-height: 44px; padding: 11px 13px; font-size: 16px; }
+.auth-submit { min-height: 46px; font-size: 13px; }
+.field-hint { color: #627674; font-size: 11px; line-height: 1.5; }
+.form-error { padding-left: 10px; border-left: 2px solid #a94432; color: #963b2c; font-size: 12px; line-height: 1.5; }
+.guest-note { color: #536966; font-size: 12px; }
+
+.portal-shell { padding-top: clamp(52px, 6vw, 74px); }
+.portal-heading { margin-bottom: 32px; }
+.portal-heading > div > p:last-child { color: #536a6f; font-size: 13px; }
+.status-pill, .count-chip, .keys-heading > span, .shared-trips-heading > span { font-size: 9px; }
+.account-stack, .portal-grid { gap: 16px; }
+.account-card, .devices-card, .keys-card, .shared-trips-card { border-radius: 7px; box-shadow: 0 8px 24px rgba(8,25,31,.035); }
+.card-label, .card-label small { font-size: 9px; }
+.id-ticket { border-radius: 5px; }
+.id-ticket span, .id-ticket small { font-size: 9px; }
+.id-ticket small { line-height: 1.5; }
+.account-grid span { color: #627673; font-size: 11px; }
+.account-grid strong { font-size: 12px; }
+.delete-control, .text-danger { font-size: 11px; }
+.delete-control summary { min-height: 36px; display: inline-flex; align-items: center; }
+
+.section-heading h2, .keys-heading h2 { font-size: 30px; }
+.section-intro, .keys-intro { color: #53696d; font-size: 13px; line-height: 1.55; }
+.device-row { min-height: 68px; }
+.device-copy strong { font-size: 13px; }
+.device-copy span { color: #617473; font-size: 11px; }
+.current-device { font-size: 9px; }
+.revoke-button { min-height: 36px; padding-inline: 12px; font-size: 11px; }
+.device-skeleton, .panel-loading { padding: 24px 0; color: #5c716f; font-size: 12px; }
+
+.provider-editor { gap: 14px; border-radius: 5px; background: #f7f8f3; }
+.provider-title strong { font-size: 14px; }
+.provider-title > span { font-size: 9px; }
+.provider-actions button { min-height: 38px; padding-inline: 14px; font-size: 11px; }
+.key-message, .shared-message { padding-left: 10px; border-left: 2px solid var(--mint-deep); color: #286553; font-size: 12px; line-height: 1.5; }
+
+.shared-trips-heading h2 { font-size: 36px; }
+.shared-trips-heading p:last-child { color: #52696d; font-size: 13px; }
+.shared-trip-create label, .trip-edit-form label, .flight-share-form label { color: #4f6663; font-size: 11px; }
+.shared-trip-create input, .trip-edit-form input, .flight-share-form input, .invite-output input { min-height: 42px; font-size: 16px; }
+.shared-empty { color: #536b68; font-size: 12px; line-height: 1.6; }
+.trip-switcher { scrollbar-color: #9eb0ab transparent; scrollbar-width: thin; }
+.trip-switcher button { min-height: 55px; }
+.trip-switcher strong { font-size: 12px; }
+.trip-switcher span { font-size: 9px; }
+.trip-summary span { font-size: 8px; }
+.trip-summary strong { font-size: 11px; }
+.trip-edit-form button, .flight-share-form button, .shared-subheading button, .invite-output button { min-height: 40px; font-size: 11px; }
+.shared-subheading h3 { font-size: 19px; }
+.shared-subheading > span { font-size: 8px; }
+.member-row { min-height: 56px; }
+.member-row strong { font-size: 12px; }
+.member-row small { color: #617573; font-size: 9px; }
+.member-role, .remove-link { font-size: 9px; }
+.remove-link { min-height: 34px; padding-inline: 4px; }
+.redaction-note { color: #4e6863; font-size: 10px; }
+.shared-flight-list > p { color: #5e716f; font-size: 11px; }
+.shared-flight-list article { min-height: 62px; }
+.shared-flight-list article > div:nth-child(2) strong { font-size: 12px; }
+.shared-flight-list article > div:nth-child(2) span, .shared-flight-list time { color: #607472; font-size: 10px; }
+.shared-flight-list article > button { min-height: 34px; font-size: 10px; }
+.shared-route strong { font-size: 11px; }
+
+.invite-shell { padding-top: clamp(52px, 8vw, 82px); }
+.invite-card { border-radius: 8px; box-shadow: 0 28px 70px rgba(0,0,0,.25); }
+.invite-route-mark { font-size: 9px; }
+.invite-card > p:not(.eyebrow) { color: #b5c6c7; font-size: 14px; }
+.invite-owner small, .invite-owner em { font-size: 9px; }
+.invite-owner strong { font-size: 13px; }
+.invite-privacy { color: #acbfc0; font-size: 11px; }
+.invite-expiry { color: #94aaac; font-size: 10px; }
+
+.privacy-shell { padding-top: clamp(64px, 8vw, 88px); }
+.privacy-lede { color: #4e666b; font-size: 17px; }
+.privacy-grid { gap: 14px; }
+.privacy-grid section { border-radius: 6px; }
+.privacy-grid h2 { font-size: 20px; }
+.privacy-grid p, .privacy-note { color: #536a6d; font-size: 13px; }
+
+.system-shell { min-height: calc(100vh - 74px); padding: 80px 24px; display: grid; place-items: start center; }
+.system-card { width: min(560px, 100%); padding: 40px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+.system-card h1 { margin: 14px 0 10px; font-size: clamp(38px, 7vw, 56px); line-height: 1; letter-spacing: -.055em; }
+.system-card > p:not(.eyebrow) { margin: 0 0 24px; color: #53696d; line-height: 1.65; }
+.loading-line { width: 100%; height: 2px; margin-top: 28px; overflow: hidden; background: #dce3dc; }
+.loading-line::after { content: ''; display: block; width: 35%; height: 100%; background: var(--mint-deep); animation: loading 1.2s ease-in-out infinite alternate; }
+
+@keyframes loading { to { transform: translateX(185%); } }
+
+@media (max-width: 930px) {
+  .hero { min-height: auto; }
+  .manifest-heading { margin-bottom: 36px; }
+  .feature-grid { gap: 12px; }
+  .feature-card { min-height: auto; }
+  .auth-visual { min-height: 380px; }
+}
+
+@media (max-width: 620px) {
+  .header-inner { height: 66px; }
+  .brand-mark { width: 36px; height: 36px; }
+  .brand small { display: none; }
+  .hero { padding-top: 58px; padding-bottom: 72px; gap: 52px; }
+  .hero h1 { margin-top: 24px; font-size: clamp(46px, 14vw, 58px); line-height: .94; }
+  .hero-actions { margin-top: 28px; }
+  .button.primary { width: 100%; justify-content: space-between; }
+  .flight-console { padding: 17px; }
+  .route-board { padding-block: 34px 26px; }
+  .route-board span { font-size: 10px; }
+  .continuity-strip, .manifest, .security-band { padding-inline: 20px; }
+  .manifest { padding-block: 72px; }
+  .manifest-heading h2 { font-size: 39px; }
+  .feature-card { padding: 22px; }
+  .identity-demo, .sync-demo, .control-demo { margin-inline: -22px; }
+  .auth-shell { padding: 22px 12px 58px; }
+  .auth-visual { min-height: 330px; padding: 30px 24px; }
+  .auth-visual h1 { font-size: 43px; }
+  .auth-route { margin-top: 48px; }
+  .sign-in-card { padding: 32px 24px; }
+  .sign-in-card h2 { font-size: 35px; }
+  .portal-shell { padding: 42px 12px 68px; }
+  .portal-heading { gap: 20px; }
+  .portal-heading h1 { font-size: 44px; overflow-wrap: anywhere; }
+  .account-card, .devices-card, .keys-card, .shared-trips-card { padding: 20px; }
+  .id-ticket { padding: 20px 16px; }
+  .id-ticket strong { font-size: clamp(20px, 7vw, 29px); overflow-wrap: anywhere; }
+  .device-row { grid-template-columns: 34px minmax(0, 1fr); }
+  .device-row > :last-child { grid-column: 2; justify-self: start; }
+  .provider-editor { padding: 16px; }
+  .shared-trip-create, .trip-edit-form { padding: 12px; }
+  .trip-members, .trip-flights { padding: 15px; }
+  .shared-subheading { align-items: flex-start; }
+  .invite-output { grid-template-columns: minmax(0, 1fr) auto; }
+  .flight-share-form { grid-template-columns: 1fr; }
+  .flight-share-form > label, .flight-share-form > button { grid-column: 1; }
+  .shared-flight-list article { gap: 7px 10px; }
+  .privacy-shell { padding: 52px 18px 72px; }
+  .privacy-content h1 { font-size: 45px; line-height: 1; }
+  .privacy-grid section { padding: 20px; }
+  .invite-shell { padding: 36px 12px 64px; }
+  .invite-card { padding: 30px 22px; }
+  .footer-inner { gap: 12px; font-size: 10px; }
+  .system-shell { min-height: calc(100vh - 66px); padding: 52px 16px; }
+  .system-card { padding: 28px 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  .button.primary:hover, .feature-card:hover { transform: none; }
+}
+
+@media (prefers-contrast: more) {
+  :root { --line: rgba(8, 25, 31, .3); --line-dark: rgba(214, 237, 230, .32); }
+  .eyebrow, .current-device, .provider-title > span.connected { color: #075f4b; }
+}

@@ -23,8 +23,8 @@ export default function InviteJoinButton({ token }: { token: string }) {
   }
 
   return (
-    <div className="invite-action">
-      <button className="button primary" disabled={joining} onClick={join} type="button">{joining ? "Joining..." : "Join shared trip"}</button>
+    <div aria-busy={joining} className="invite-action">
+      <button className="button primary" disabled={joining} onClick={join} type="button">{joining ? "Joining trip..." : "Join shared trip"}</button>
       {error && <p className="form-error" role="alert">{error}</p>}
     </div>
   );
