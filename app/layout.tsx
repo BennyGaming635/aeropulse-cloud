@@ -26,10 +26,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <span aria-hidden="true" className="brand-mark"><i /><i /><i /></span>
               <span><strong>Aero</strong><small>Account &amp; sync</small></span>
             </Link>
-            <nav aria-label="Primary navigation">
-              <span className="network-status"><i aria-hidden="true" /> Systems online</span>
-              <Link className="nav-account" href="/account">Account <span aria-hidden="true">↗</span></Link>
-            </nav>
+              <nav aria-label="Primary navigation">
+                <span className="network-status">
+                  <i aria-hidden="true" /> Systems online
+                </span>
+
+                <Link className="nav-link" href="/support">
+                  Support
+                </Link>
+
+                <Link className="nav-link" href="/privacy">
+                  Privacy
+                </Link>
+
+                <Link className="nav-account" href="/account">
+                  Account <span aria-hidden="true">↗</span>
+                </Link>
+              </nav>
           </div>
         </header>
         {children}
