@@ -60,6 +60,7 @@ All shared-trip API calls require an Aero ID session cookie or bearer session. B
 
 - `GET /api/shared-trips` lists the caller's memberships, members, and allow-listed flight snapshots. `POST /api/shared-trips` creates a trip and owner membership from `{ name, startDate?, endDate? }`.
 - `PATCH /api/shared-trips/:tripID` is owner-only and accepts `{ baseVersion, name?, startDate?, endDate? }`. Stale versions return HTTP 409 with `currentVersion`.
+- `DELETE /api/shared-trips/:tripID` is owner-only. It deletes the group, memberships, invites and shared flight copies; private account flights are untouched. No additional database migration is required.
 - `POST /api/shared-trips/:tripID/flights` lets a member add `{ flightNumber, airlineName?, originCode, destinationCode, scheduledDeparture, scheduledArrival?, sharingLevel?, details? }`. `DELETE` accepts `{ flightID }`; the contributor or trip owner may remove it.
 - `POST /api/shared-trips/:tripID/invites` is owner-only and accepts `{ expiresInHours, maxUses }`. It returns the raw invite URL once; only the token's SHA-256 hash is stored.
 - `POST /api/shared-trip-invites/:token/join` joins the signed-in Aero ID while the invite is active. The public `/invite/:token` page discloses only trip name, owner public identity, and expiry before joining.

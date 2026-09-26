@@ -399,3 +399,11 @@ export async function removeSharedTripMembership(userID: string, tripID: string,
   `) as Array<{ left_trip: boolean }>;
   return rows[0] ? { removed: true, leftTrip: rows[0].left_trip } : { removed: false, leftTrip: false };
 }
+
+/** Deleting a group removes only shared snapshots; private sync flights are untouched. */
+export async function deleteSharedTrip(userID: string, tripID: string): Promise<boolean> {
+  const rows = await sql`
+    DELETE FROM shared_trips WHERE id = ${tripID} AND owner_user_id = ${userID} RETURNING id
+  `;
+  return rows.length > 0;
+}

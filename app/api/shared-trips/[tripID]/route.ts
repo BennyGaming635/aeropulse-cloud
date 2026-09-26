@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { updateSharedTrip } from "@/lib/shared-trips";
+import { updateSharedTrip, deleteSharedTrip } from "@/lib/shared-trips";
 import { accountForRequest, isTrustedMutation } from "@/lib/sessions";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use an ISO date").refine((value) => {
@@ -39,5 +39,23 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ t
     }
     console.error("Shared trip update failed", error);
     return NextResponse.json({ error: "Could not update this shared trip" }, { status: 503 });
+  }
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ tripID: string }> }) {
+  if (!isTrustedMutation(request)) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+  const account = await accountForRequest(request);
+  if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const { tripID } = await context.params;
+    z.string().uuid().parse(tripID);
+    if (!await deleteSharedTrip(account.id, tripID)) {
+      return NextResponse.json({ error: "Trip not found or you are not its owner" }, { status: 404 });
+    }
+    return NextResponse.json({ deleted: true });
+  } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ error: "Invalid trip ID" }, { status: 400 });
+    console.error("Shared trip deletion failed", error);
+    return NextResponse.json({ error: "Could not delete this shared trip" }, { status: 503 });
   }
 }
