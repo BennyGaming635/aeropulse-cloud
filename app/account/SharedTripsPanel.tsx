@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import type { SharedTripView } from "@/lib/shared-trips";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import type { SharedTripView, SharedFlight } from "@/lib/shared-trips";
 
-type APIResult = { error?: string; trips?: SharedTripView[]; trip?: { id: string }; invite?: { url: string; expiresAt: string } };
+type APIResult = { error?: string; trips?: SharedTripView[]; trip?: { id: string }; invite?: { url: string; expiresAt: string }; flight?: SharedFlight };
 
 async function apiRequest(path: string, method: string, body?: unknown): Promise<APIResult> {
   const response = await fetch(path, {
@@ -47,7 +47,13 @@ export default function SharedTripsPanel({ initialTripID }: { initialTripID?: st
       })
       .catch((requestError) => active && setError(requestError instanceof Error ? requestError.message : "Could not load shared trips"))
       .finally(() => active && setLoading(false));
-    return () => { active = false; };
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      apiRequest("/api/shared-trips", "GET").then(result => {
+        if (active) setTrips(result.trips || []);
+      }).catch(() => { if (active) setError("Could not refresh shared trips. Reload to try again."); });
+    }, 30000);
+    return () => { active = false; window.clearInterval(timer); };
   }, []);
 
   async function createTrip(event: FormEvent<HTMLFormElement>) {
@@ -79,7 +85,7 @@ export default function SharedTripsPanel({ initialTripID }: { initialTripID?: st
         <div>
           <p className="eyebrow">AERO ID SHARING</p>
           <h2>Shared trips</h2>
-          <p>Coordinate a public flight snapshot with people you invite. Your private Aero data stays separate.</p>
+          <p>Share selected flight details with people you invite. Every member sees shared flights.</p>
         </div>
         <span>{trips.length.toString().padStart(2, "0")} TRIPS</span>
       </div>
@@ -96,6 +102,10 @@ export default function SharedTripsPanel({ initialTripID }: { initialTripID?: st
         <p className="shared-empty">No shared trips yet. Create one above, then invite another Aero ID.</p>
       ) : (
         <>
+          <details className="all-shared-flights" open>
+            <summary>All shared flights</summary>
+            {trips.flatMap(trip => trip.flights.map(flight => <div key={`${trip.id}:${flight.id}`}><h3>{trip.name}</h3><SharedFlightCard flight={flight} tripID={trip.id} /></div>))}
+          </details>
           <div aria-label="Choose a shared trip" className="trip-switcher" role="group">
             {trips.map((trip) => (
               <button aria-pressed={trip.id === selectedID} className={trip.id === selectedID ? "active" : ""} key={trip.id} onClick={() => setSelectedID(trip.id)} type="button">
@@ -122,6 +132,15 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
   const [departure, setDeparture] = useState("");
   const [arrival, setArrival] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [level, setLevel] = useState(0);
+  const sharingDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => { if (sharing) sharingDialog.current?.showModal(); }, [sharing]);
+  const [details, setDetails] = useState<Record<string, string>>({});
+  const levelNames = ["Basics", "Some detail", "Everything"];
+  const levelValues = ["basics", "details", "everything"];
+  const detailFields = ["status", "aircraft", "registration", "terminal", "gate", "arrivalTerminal", "arrivalGate", "baggageClaim"];
+  const fieldLabels: Record<string, string> = { status: "Status", aircraft: "Aircraft", registration: "Registration", terminal: "Departure terminal", gate: "Departure gate", arrivalTerminal: "Arrival terminal", arrivalGate: "Arrival gate", baggageClaim: "Baggage carousel", seat: "Seat", confirmationCode: "Booking reference", notes: "Notes" };
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -170,21 +189,22 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
   function addFlight(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void run(async () => {
-      await apiRequest(`/api/shared-trips/${trip.id}/flights`, "POST", {
-        flightNumber,
-        airlineName: airlineName || undefined,
-        originCode,
-        destinationCode,
+      const content = level === 0 ? {} : Object.fromEntries(Object.entries(details).filter(([key]) => level === 2 || detailFields.includes(key)));
+      const result = await apiRequest(`/api/shared-trips/${trip.id}/flights`, "POST", {
+        flightNumber, airlineName: airlineName || undefined, originCode, destinationCode,
         scheduledDeparture: new Date(departure).toISOString(),
         scheduledArrival: arrival ? new Date(arrival).toISOString() : undefined,
+        sharingLevel: levelValues[level], details: content,
       });
+      if (!result.flight) throw new Error("The server did not return the shared flight.");
+      setSharing(false); setDetails({}); setLevel(0);
       setFlightNumber("");
       setAirlineName("");
       setOriginCode("");
       setDestinationCode("");
       setDeparture("");
       setArrival("");
-      setMessage("Flight shared without private booking details.");
+      setMessage("Flight shared with every trip member.");
       await onChanged();
     });
   }
@@ -249,30 +269,63 @@ function TripWorkspace({ trip, onChanged }: { trip: SharedTripView; onChanged: (
 
         <section className="trip-flights">
           <div className="shared-subheading"><h3>Flights</h3><span>{trip.flights.length} SHARED</span></div>
-          <form className="flight-share-form" onSubmit={addFlight}>
+          <div className="shared-flight-list">
+            {trip.flights.length === 0 ? <p>No flights shared yet.</p> : trip.flights.map((flight) => (
+              <SharedFlightCard key={flight.id} flight={flight} tripID={trip.id}>
+                {flight.canRemove && <button disabled={busy} onClick={() => removeFlight(flight.id)} type="button">Remove</button>}
+              </SharedFlightCard>
+            ))}
+          </div>
+          <form className="flight-share-form" onSubmit={(event) => {
+            event.preventDefault();
+            const values = new FormData(event.currentTarget);
+            setDeparture(String(values.get("departure") || ""));
+            setArrival(String(values.get("arrival") || ""));
+            setSharing(true); setError(null);
+          }}>
             <input aria-label="Flight number" autoCapitalize="characters" autoComplete="off" maxLength={16} name="flightNumber" placeholder="Flight, e.g. UA901" required value={flightNumber} onChange={(event) => setFlightNumber(event.target.value.toUpperCase())} />
             <input aria-label="Airline" autoComplete="off" maxLength={100} name="airlineName" placeholder="Airline (optional)" value={airlineName} onChange={(event) => setAirlineName(event.target.value)} />
             <input aria-label="Origin airport" autoCapitalize="characters" autoComplete="off" maxLength={3} name="originCode" pattern="[A-Za-z]{3}" placeholder="SFO" required value={originCode} onChange={(event) => setOriginCode(event.target.value.toUpperCase())} />
             <input aria-label="Destination airport" autoCapitalize="characters" autoComplete="off" maxLength={3} name="destinationCode" pattern="[A-Za-z]{3}" placeholder="LHR" required value={destinationCode} onChange={(event) => setDestinationCode(event.target.value.toUpperCase())} />
             <label>Departure<input name="departure" required type="datetime-local" value={departure} onChange={(event) => setDeparture(event.target.value)} /></label>
             <label>Arrival <span>optional</span><input min={departure || undefined} name="arrival" type="datetime-local" value={arrival} onChange={(event) => setArrival(event.target.value)} /></label>
-            <button disabled={busy} type="submit">Share flight</button>
+            <button disabled={busy} type="submit">Choose what to share</button>
           </form>
-          <p className="redaction-note">Only flight number, airline, route, and scheduled times are shared. Never seats, confirmation codes, provider keys, notes, or attachments.</p>
-          <div className="shared-flight-list">
-            {trip.flights.length === 0 ? <p>No flights shared yet.</p> : trip.flights.map((flight) => (
-              <article key={flight.id}>
-                <div className="shared-route"><strong>{flight.originCode}</strong><i /><strong>{flight.destinationCode}</strong></div>
-                <div><strong>{flight.flightNumber}</strong><span>{flight.airlineName || "Airline not specified"}</span></div>
-                <time>{new Date(flight.scheduledDeparture).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</time>
-                {flight.canRemove && <button disabled={busy} onClick={() => removeFlight(flight.id)} type="button">Remove</button>}
-              </article>
-            ))}
-          </div>
         </section>
       </div>
+      {sharing && (
+        <div className="share-modal-backdrop">
+          <dialog ref={sharingDialog} aria-labelledby="share-title" className="share-modal" onCancel={event => { if (busy) event.preventDefault(); else setSharing(false); }}>
+            <h3 id="share-title">What would you like to share?</h3>
+            <p>{flightNumber} · {originCode}–{destinationCode} · All members of {trip.name}</p>
+            <form onSubmit={addFlight}>
+              <label htmlFor="sharing-level">{levelNames[level]}</label>
+              <input autoFocus id="sharing-level" type="range" min={0} max={2} step={1} value={level} aria-valuetext={levelNames[level]} disabled={busy} onChange={e => setLevel(Number(e.target.value))} />
+              <div className="share-levels">{levelNames.map((name, index) => <button type="button" disabled={busy} aria-pressed={level === index} key={name} onClick={() => setLevel(index)}>{name}</button>)}</div>
+              <p>{level === 0 ? "Flight number, airline, route and scheduled times." : level === 1 ? "Basics plus status, aircraft, terminals, gates and baggage details." : "Some detail plus seat, booking reference and text notes. Documents, photos, files and account credentials are never shared."}</p>
+              {level > 0 && <div className="flight-share-form">{[...detailFields, ...(level === 2 ? ["seat", "confirmationCode", "notes"] : [])].map(key => <label key={key}>{fieldLabels[key]}<input maxLength={key === "notes" ? 20000 : key === "aircraft" ? 120 : key === "confirmationCode" ? 100 : 40} value={details[key] || ""} disabled={busy} onChange={e => setDetails({...details, [key]: e.target.value})} /></label>)}</div>}
+              {error && <p className="form-error" role="alert">{error}</p>}
+              <div className="share-actions"><button type="button" disabled={busy} onClick={() => setSharing(false)}>Cancel</button><button className="button primary" disabled={busy} type="submit">{busy ? "Sharing…" : `Share ${levelNames[level].toLowerCase()}`}</button></div>
+            </form>
+          </dialog>
+        </div>
+      )}
       {message && <p className="shared-message" role="status">{message}</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
     </div>
   );
+}
+
+function SharedFlightCard({ flight, tripID, children }: { flight: SharedFlight; tripID: string; children?: React.ReactNode }) {
+  const labels: Record<string, string> = { status: "Status", estimatedDeparture: "Estimated departure", estimatedArrival: "Estimated arrival", aircraft: "Aircraft", registration: "Registration", terminal: "Departure terminal", gate: "Departure gate", arrivalTerminal: "Arrival terminal", arrivalGate: "Arrival gate", baggageClaim: "Baggage", seat: "Seat", confirmationCode: "Booking reference", notes: "Notes" };
+  return <article className="shared-flight-card">
+    <div className="shared-route"><strong>{flight.originCode}</strong><i /><strong>{flight.destinationCode}</strong></div>
+    <div><strong>{flight.flightNumber}</strong><span>{flight.airlineName || ""}</span></div>
+    <time>{new Date(flight.scheduledDeparture).toLocaleString()}</time>
+    {flight.scheduledArrival && <p>Arrival: {new Date(flight.scheduledArrival).toLocaleString()}</p>}
+    <p>{flight.sharingLevel === "everything" ? "Everything" : flight.sharingLevel === "details" ? "Some detail" : "Basics"} · Shared by {flight.addedBy?.displayName || flight.addedBy?.username || "a trip member"}</p>
+    {Object.entries(flight.details || {}).filter(([key, value]) => key !== "timelineNotes" && value).map(([key, value]) => <p key={key}><strong>{labels[key] || key}: </strong>{String(value)}</p>)}
+    {flight.details?.timelineNotes?.map((note, index) => <p key={index}>{note.text} <small>{new Date(note.createdAt).toLocaleString()}</small></p>)}
+    {children}
+  </article>;
 }

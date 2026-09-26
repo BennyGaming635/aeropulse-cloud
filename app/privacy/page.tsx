@@ -36,12 +36,12 @@ const sections = [
   [
     "06",
     "Shared flight snapshot",
-    "A snapshot contains only flight number, optional airline name, origin and destination airport codes, and scheduled departure and arrival times.",
+    "The sender chooses the sharing level. Basics shares flight number, airline, route and schedule. Some detail adds operational information. Everything also shares seat, booking reference and text notes with all trip members.",
   ],
   [
     "07",
     "Never copied",
-    "Provider credentials, booking confirmation codes, seats, private notes, attachments, and the rest of your private sync snapshot are not modeled in shared trips and cannot be returned by sharing APIs.",
+    "Provider credentials, account secrets, documents, photos and other files are never shared. Booking details and text notes are excluded unless the sender selects Everything.",
   ],
   [
     "08",
@@ -231,9 +231,9 @@ export default function PrivacyPage() {
             <div className="legal-eyebrow">AERO · PRIVACY</div>
 
             <h1 className="legal-title">
-              Share the route,
+              Choose what
               <br />
-              not the booking.
+              you share.
             </h1>
 
             <p className="legal-lede">

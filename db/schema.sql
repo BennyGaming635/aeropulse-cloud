@@ -100,8 +100,7 @@ CREATE TABLE IF NOT EXISTS shared_trip_invites (
   CHECK (use_count <= max_uses)
 );
 
--- Shared snapshots are intentionally allow-listed. Sensitive sync fields such as
--- credentials, confirmation codes, seats, private notes, and attachments have no columns here.
+-- Flight details are allow-listed according to the explicitly chosen sharing level.
 CREATE TABLE IF NOT EXISTS shared_flight_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id UUID NOT NULL REFERENCES shared_trips(id) ON DELETE CASCADE,
@@ -125,5 +124,19 @@ CREATE INDEX IF NOT EXISTS shared_trip_invites_trip_idx ON shared_trip_invites(t
 CREATE INDEX IF NOT EXISTS shared_trip_invites_expiry_idx ON shared_trip_invites(expires_at);
 CREATE INDEX IF NOT EXISTS shared_flight_snapshots_trip_idx ON shared_flight_snapshots(trip_id);
 
-INSERT INTO schema_metadata (singleton, version) VALUES (TRUE, 4)
+-- Sharing levels. Files and attachment metadata are never shared.
+ALTER TABLE shared_flight_snapshots ADD COLUMN IF NOT EXISTS sharing_level TEXT NOT NULL DEFAULT 'basics'
+  CHECK (sharing_level IN ('basics', 'details', 'everything'));
+ALTER TABLE shared_flight_snapshots ADD COLUMN IF NOT EXISTS details JSONB NOT NULL DEFAULT '{}'::jsonb;
+-- Each traveller can share their own details for the same scheduled flight.
+DO $$ DECLARE entry RECORD; BEGIN
+  FOR entry IN SELECT conname FROM pg_constraint
+    WHERE conrelid = 'shared_flight_snapshots'::regclass AND contype = 'u'
+      AND pg_get_constraintdef(oid) = 'UNIQUE (trip_id, flight_number, origin_code, destination_code, scheduled_departure)'
+  LOOP EXECUTE format('ALTER TABLE shared_flight_snapshots DROP CONSTRAINT %I', entry.conname); END LOOP;
+END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS shared_flight_contributor_idx ON shared_flight_snapshots
+  (trip_id, added_by_user_id, flight_number, origin_code, destination_code, scheduled_departure);
+
+INSERT INTO schema_metadata (singleton, version) VALUES (TRUE, 5)
 ON CONFLICT (singleton) DO UPDATE SET version = EXCLUDED.version;

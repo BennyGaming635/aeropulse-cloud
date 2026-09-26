@@ -3,16 +3,8 @@ import { z } from "zod";
 import { addSharedFlight, removeSharedFlight } from "@/lib/shared-trips";
 import { accountForRequest, isTrustedMutation } from "@/lib/sessions";
 
-const flightSchema = z.object({
-  flightNumber: z.string().trim().min(1).max(16).transform((value) => value.toUpperCase()),
-  airlineName: z.string().trim().max(100).optional().transform((value) => value || null),
-  originCode: z.string().trim().length(3).regex(/^[A-Za-z]{3}$/).transform((value) => value.toUpperCase()),
-  destinationCode: z.string().trim().length(3).regex(/^[A-Za-z]{3}$/).transform((value) => value.toUpperCase()),
-  scheduledDeparture: z.string().datetime({ offset: true }),
-  scheduledArrival: z.string().datetime({ offset: true }).optional().nullable(),
-}).refine((value) => !value.scheduledArrival || Date.parse(value.scheduledArrival) >= Date.parse(value.scheduledDeparture), {
-  message: "Arrival must be on or after departure",
-});
+import { sharedFlightSchema as flightSchema } from "@/lib/shared-flight-content";
+
 const deleteSchema = z.object({ flightID: z.string().uuid() });
 
 export async function POST(request: NextRequest, context: { params: Promise<{ tripID: string }> }) {
@@ -28,7 +20,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ tr
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0]?.message }, { status: 400 });
     if ((error as { code?: string }).code === "23505") {
-      return NextResponse.json({ error: "That flight is already shared on this trip" }, { status: 409 });
+      return NextResponse.json({ error: "You already shared this flight. Remove your existing share before choosing different contents." }, { status: 409 });
     }
     if ((error as { code?: string }).code === "23514") {
       return NextResponse.json({ error: "Flight schedule is not valid" }, { status: 400 });

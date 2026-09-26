@@ -2,6 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import { sql } from "@/lib/db";
 import { env } from "@/lib/env";
 
+import { sharedContent, type SharedFlightDetails, type SharingLevel } from "@/lib/shared-flight-content";
+
 type DateValue = string | Date;
 
 export type SharedTripMember = {
@@ -15,6 +17,8 @@ export type SharedTripMember = {
 };
 
 export type SharedFlight = {
+  sharingLevel: SharingLevel;
+  details: SharedFlightDetails;
   id: string;
   flightNumber: string;
   airlineName: string | null;
@@ -49,6 +53,8 @@ export type SharedTripInput = {
 };
 
 export type SharedFlightInput = {
+  sharingLevel: SharingLevel;
+  details: SharedFlightDetails;
   flightNumber: string;
   airlineName?: string | null;
   originCode: string;
@@ -80,6 +86,8 @@ type MemberRow = {
 };
 
 type FlightRow = {
+  sharing_level: SharingLevel;
+  details: SharedFlightDetails;
   id: string;
   trip_id: string;
   flight_number: string;
@@ -108,6 +116,8 @@ function dateOnly(value: DateValue | null): string | null {
 function publicFlight(row: FlightRow): SharedFlight {
   return {
     id: row.id,
+    sharingLevel: row.sharing_level,
+    details: sharedContent(row.sharing_level, row.details),
     flightNumber: row.flight_number,
     airlineName: row.airline_name,
     originCode: row.origin_code.trim(),
@@ -147,7 +157,7 @@ export async function sharedTripsForUser(userID: string): Promise<SharedTripView
     `,
     sql`
       SELECT f.id, f.trip_id, f.flight_number, f.airline_name, f.origin_code, f.destination_code,
-        f.scheduled_departure, f.scheduled_arrival, f.version, f.created_at,
+        f.scheduled_departure, f.scheduled_arrival, f.version, f.created_at, f.sharing_level, f.details,
         u.aero_pulse_id, u.username, u.display_name,
         (f.added_by_user_id = ${userID} OR t.owner_user_id = ${userID}) AS can_remove
       FROM shared_flight_snapshots f
@@ -256,15 +266,16 @@ export async function addSharedFlight(userID: string, tripID: string, input: Sha
   const rows = (await sql`
     INSERT INTO shared_flight_snapshots (
       trip_id, added_by_user_id, flight_number, airline_name, origin_code,
-      destination_code, scheduled_departure, scheduled_arrival
+      destination_code, scheduled_departure, scheduled_arrival, sharing_level, details
     )
     SELECT ${tripID}, ${userID}, ${input.flightNumber}, ${input.airlineName ?? null},
-      ${input.originCode}, ${input.destinationCode}, ${input.scheduledDeparture}, ${input.scheduledArrival ?? null}
+      ${input.originCode}, ${input.destinationCode}, ${input.scheduledDeparture}, ${input.scheduledArrival ?? null},
+      ${input.sharingLevel}, ${JSON.stringify(sharedContent(input.sharingLevel, input.details))}::jsonb
     WHERE EXISTS (
       SELECT 1 FROM shared_trip_memberships WHERE trip_id = ${tripID} AND user_id = ${userID}
     )
     RETURNING id, trip_id, flight_number, airline_name, origin_code, destination_code,
-      scheduled_departure, scheduled_arrival, version, created_at
+      scheduled_departure, scheduled_arrival, version, created_at, sharing_level, details
   `) as Array<Omit<FlightRow, "aero_pulse_id" | "username" | "display_name" | "can_remove">>;
   if (!rows[0]) return null;
   return publicFlight({

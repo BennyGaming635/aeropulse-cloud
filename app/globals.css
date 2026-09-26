@@ -428,3 +428,23 @@ button:disabled, input:disabled { cursor: not-allowed; }
   :root { --line: rgba(8, 25, 31, .3); --line-dark: rgba(214, 237, 230, .32); }
   .eyebrow, .current-device, .provider-title > span.connected { color: #075f4b; }
 }
+
+.share-modal-backdrop { position: fixed; inset: 0; z-index: 100; background: #07122499; display: grid; place-items: center; padding: 20px; }
+.share-modal { background: var(--paper, #fff); color: #152133; border-radius: 24px; padding: 28px; width: min(620px, 100%); max-height: 90dvh; overflow: auto; box-shadow: 0 24px 100px #0004; }
+.share-modal input[type=range] { width: 100%; margin: 18px 0; accent-color: #275be8; }
+.share-modal label { display: block; }
+.share-levels, .share-actions { display: flex; justify-content: space-between; gap: 12px; margin: 18px 0; }
+.share-levels button[aria-pressed=true] { background: #275be8; color: white; }
+.shared-flight-card { overflow-wrap: anywhere; }
+.shared-flight-card p, .shared-flight-card a { display: block; width: 100%; }
+.all-shared-flights { margin: 20px 0; }
+.all-shared-flights > div { padding: 16px; border: 1px solid #dce2ec; border-radius: 16px; margin-top: 12px; }
+
+.share-modal { margin: auto; border: 0; }
+.share-modal::backdrop { background: #07122499; }
+.share-levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 4px; border-radius: 14px; background: #e9edf5; }
+.share-levels button { min-height: 40px; border: 0; border-radius: 10px; background: transparent; font: inherit; font-size: 13px; cursor: pointer; }
+.share-modal .flight-share-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.share-modal .flight-share-form > :first-child { grid-column: auto; }
+.share-actions button { border: 0; border-radius: 12px; padding: 12px 18px; cursor: pointer; font: inherit; }
+@media (max-width: 520px) { .share-modal { padding: 20px; } .share-modal .flight-share-form { grid-template-columns: 1fr; } }
